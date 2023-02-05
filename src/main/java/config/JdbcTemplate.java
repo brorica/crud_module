@@ -6,15 +6,23 @@ import java.sql.SQLException;
 
 public class JdbcTemplate {
 
-    private final String connectUrl = "jdbc:postgresql://localhost:5431/geor";
-    private final String user = "geor";
-    private final String password = "geor";
+    private static final JdbcTemplate jdbcTemplateInstance = new JdbcTemplate();
+    private final String driver = "org.postgresql.Driver";
+    private final String connectUrl = "jdbc:postgresql://localhost:5431/crud";
+    private final String user = "crud";
+    private final String password = "crud";
 
-    public Connection getConnection() throws SQLException {
+    private JdbcTemplate() {}
+
+    public static JdbcTemplate getInstance() {
+        return jdbcTemplateInstance;
+    }
+
+    public Connection getConnection() throws SQLException, ClassNotFoundException {
         try {
-            Class.forName(connectUrl);
+            Class.forName(driver);
         } catch (ClassNotFoundException e) {
-            e.printStackTrace();
+            throw e;
         }
         Connection conn = DriverManager.getConnection(connectUrl, user, password);
         conn.setAutoCommit(false);
