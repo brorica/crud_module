@@ -11,9 +11,9 @@ public class MarketRepository {
 
     private final int batchLimit = 4096;
 
-    public int save(Connection connection, List<Market> markets) throws SQLException {
+    public int save(Connection connection, List<Market> markets, String table) throws SQLException {
         int totalSave = 0;
-        String sql = makeInsertQuery();
+        String sql = makeInsertQuery(table);
         try(PreparedStatement pStmt = connection.prepareStatement(sql)) {
             totalSave += setStatement(pStmt, markets);
         } catch (SQLException e) {
@@ -77,10 +77,11 @@ public class MarketRepository {
         return totalBatch;
     }
 
-    private String makeInsertQuery() {
+    private String makeInsertQuery(String table) {
         StringBuilder sb = new StringBuilder();
-        sb.append("INSERT INTO public.market (");
-        sb.append("id, ");
+        sb.append("INSERT INTO public.");
+        sb.append(table);
+        sb.append(" (id, ");
         sb.append("business_name, ");
         sb.append("branch_name, ");
         sb.append("commercial_main_classification_code, ");
@@ -124,18 +125,19 @@ public class MarketRepository {
         return sb.toString();
     }
 
-    public void createTable(Connection connection) throws SQLException {
-        String sql = makeCreateQuery();
+    public void createTable(Connection connection, String sido) throws SQLException {
+        String sql = makeCreateQuery(sido);
         try (Statement st = connection.createStatement()) {
             System.out.println(sql);
             st.execute(sql);
         }
     }
 
-    private String makeCreateQuery() {
+    private String makeCreateQuery(String sido) {
         StringBuilder sb = new StringBuilder();
-        sb.append("CREATE TABLE market( ");
-        sb.append("id bigint primary key not null, ");
+        sb.append("CREATE TABLE ");
+        sb.append(sido);
+        sb.append("(id bigint primary key not null, ");
         sb.append("business_name varchar(64), ");
         sb.append("branch_name varchar(64), ");
         sb.append("commercial_main_classification_code char(8), ");

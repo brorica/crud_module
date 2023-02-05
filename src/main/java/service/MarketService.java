@@ -20,7 +20,7 @@ public class MarketService {
 
     public void saveCsv() {
         try (Connection connection = jdbcTemplate.getConnection()) {
-            marketRepository.createTable(connection);
+            createTables(connection);
             saveMarket(connection);
             connection.commit();
         } catch (Exception e) {
@@ -28,14 +28,34 @@ public class MarketService {
         }
     }
 
+    private void createTables(Connection connection) throws SQLException {
+        String[] sidos = {
+            "busan", "chungbug", "chungnam", "daegu", "daejeon",
+            "gangwon", "gwangju", "gyeongbug", "gyeonggi", "gyeongnam",
+            "incheon", "jeju", "jeonbug", "jeonnam", "sejong",
+            "seoul", "ulsan"
+        };
+        for (String sido : sidos) {
+            marketRepository.createTable(connection, sido);
+        }
+    }
+
     private void saveMarket(Connection connection) throws IOException, SQLException {
         int totalSave = 0;
+        String baseName;
         File[] files = csvUtil.getFiles();
         for (File file : files) {
+            baseName = parseBaseName(file);
+            System.out.print(baseName + " ");
             List<Market> markets = csvUtil.makeMarkets(file);
-            System.out.print(file.getName() + " ");
-            totalSave += marketRepository.save(connection, markets);
+            totalSave += marketRepository.save(connection, markets, baseName);
         }
-        System.out.printf("total save = %d\n", totalSave);
+        System.out.printf("total save: %d\n", totalSave);
+    }
+
+    private String parseBaseName(File csv) {
+        String fileName = csv.getName();
+        String[] splits = fileName.split("[.]");
+        return splits[0];
     }
 }
